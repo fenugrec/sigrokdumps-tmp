@@ -1,0 +1,44 @@
+-------------------------------------------------------------------------------
+Intel MCS-48 external memory access
+-------------------------------------------------------------------------------
+
+Example dump of external program memory access on an Intel 8039 (like the 8048, part of the MCS-48 family ) in an HP 3478A bench multimeter.
+The 8039 has no internal ROM, this PD was designed to reconstruct a ROM dump without needing to desolder the ROM IC.
+
+The HP3478A is special in that it needed to access 8kB of code -- the normal MCS-48 address space is 4kB, so an extra address line was added (A12)
+under software control. In other words, they have crafted their code to toggle a pin to control A12 and thus switch memory "banks".
+
+-------------------
+This capture was produced in PV with a logic16 clone with the following channel assignments:
+
+probe1=A8
+probe2=A9
+probe3=A10
+probe4=A11
+probe5=A12
+probe6=ALE
+probe8=PSEN
+probe9=D0
+probe10=D1
+probe11=D2
+probe12=D3
+probe13=D4
+probe14=D5
+probe15=D6
+probe16=D7
+
+A sampling rate of 8MHz was sufficient to validate transitions on ALE and PSEN.
+
+-------------------
+Example sigrok-cli invocation to dump the memory accesses:
+
+sigrok-cli -i i8039_sample.sr -P mcs48:d0=D0:d1=D1:d2=D2:d3=D3:d4=D4:d5=D5:d6=D6:d7=D7:a8=A8:a9=A9:a10=A10:a11=A11:a12=A12:ale=ALE:psen=PSEN
+
+The text annotations are formated as "XXXX:YY" where XXXX is the address and YY the byte at that address.
+A more useful command 
+
+sigrok-cli -i i8039_sample.sr -P mcs48:d0=D0:d1=D1:d2=D2:d3=D3:d4=D4:d5=D5:d6=D6:d7=D7:a8=A8:a9=A9:a10=A10:a11=A11:a12=A12:ale=ALE:psen=PSEN -B mcs48 > rom_access.bin
+
+writes every access to a raw file, simply as 3-byte chunks [XX XX YY] which may easily be post-processed to reconstruct the full ROM image.
+
+Further information may be found on https://github.com/fenugrec/hp3478a_utils/blob/master/sigrok_PD/notes.txt
